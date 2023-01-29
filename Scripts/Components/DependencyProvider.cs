@@ -4,53 +4,47 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Linq;
 
-public abstract class DependencyProvider : MonoBehaviour
+namespace UnityInject
 {
-    private UnityEvent<MonoBehaviour> _publishDependencies;
-    private IEnumerable<Type> _implementedTypes;
-    private bool _hasInjected;
-
-    private void Awake()
+    public abstract class DependencyProvider : MonoBehaviour
     {
-        Inject();
-    }
+        private UnityEvent<MonoBehaviour> _publishDependencies;
+        private IEnumerable<Type> _implementedTypes;
+        private bool _hasInjected;
 
-    private void OnEnable()
-    {
-        if (!_hasInjected)
-            Inject();
-    }
-
-    private void Inject()
-    {
-        _hasInjected = true;
-        _publishDependencies = new UnityEvent<MonoBehaviour>();
-
-        _implementedTypes = GetType().GetInterfaces()
-            .Where(x => x.CustomAttributes.Any(x => x.AttributeType == typeof(DependencyInterfaceAttribute)))
-            .Select(x => typeof(IRequiresDependencies<>).MakeGenericType(x))
-            .ToList();
-
-        foreach (var type in _implementedTypes)
+        private void Awake()
         {
-            var components = transform.GetComponentsInChildren(type, true).Cast<MonoBehaviour>();
-            foreach (var component in components)
-            {
-                _publishDependencies.AddListener((x) => type
-                    .GetMethod(nameof(IRequiresDependencies<MonoBehaviour>.InitializeWithDependencies))
-                    .Invoke(component, new object[] { x.gameObject, x }));
-            }
+            Inject();
         }
 
-        _publishDependencies.Invoke(this);
-    }
+        private void OnEnable()
+        {
+            if (!_hasInjected)
+                Inject();
+        }
 
-    protected T ComponentFromGameObject<T>(GameObject source)
-    {
-        var component = source.GetComponentInChildren<T>();
-        if (component != null)
-            return component;
+        private void Inject()
+        {
+            _hasInjected = true;
+            _publishDependencies = new UnityEvent<MonoBehaviour>();
 
-        throw new ExpectedComponentException(source.name, nameof(T));
+            _implementedTypes = GetType().GetInterfaces()
+                .Where(x => x.CustomAttributes.Any(x => x.AttributeType == typeof(DependencyInterfaceAttribute)))
+                .Select(x => typeof(IRequiresDependencies<>).MakeGenericType(x))
+                .ToList();
+
+            foreach (var type in _implementedTypes)
+            {
+                var components = transform.GetComponentsInChildren(type, true).Cast<MonoBehaviour>();
+                foreach (var component in components)
+                {
+                    _publishDependencies.AddListener((x) => type
+                        .GetMethod(nameof(IRequiresDependencies<MonoBehaviour>.InitializeWithDependencies))
+                        .Invoke(component, new object[] { x.gameObject, x }));
+                }
+            }
+
+            _publishDependencies.Invoke(this);
+        }
     }
 }

@@ -1,8 +1,8 @@
 {
   "name": "com.geppy.unityinject",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "displayName": "UnityInject",
-  "description": "A home-made dependency injector for Unity",
+  "description": "UnityInject is a dependency injection system for the Unity game engine that makes it easy to manage dependencies between components in your project.",
   "unity": "2021.3",
   "unityRelease": "16f1",
   "documentationUrl": "https://github.com/callum-else/UnityInject#readme",

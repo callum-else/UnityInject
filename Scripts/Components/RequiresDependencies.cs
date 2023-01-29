@@ -3,39 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public abstract class RequiresDependencies<T> : MonoBehaviour, IRequiresDependencies<T>
+namespace UnityInject
 {
-    private List<Action> _actionsOnInitialize;
-
-    protected bool IsInitialized { get; private set; }
-    protected GameObject RootObject { get; private set; }
-
-    public void InitializeWithDependencies(GameObject root, T dependencies)
+    public abstract class RequiresDependencies<T> : MonoBehaviour, IRequiresDependencies<T>
     {
-        RootObject = root;
-        Initialize(dependencies);
-        IsInitialized = true;
+        private List<Action> _actionsOnInitialize;
 
-        if (_actionsOnInitialize != null)
-        {
-            foreach (var action in _actionsOnInitialize)
-                action.Invoke();
-        }
-    }
+        protected bool IsInitialized { get; private set; }
+        protected GameObject RootObject { get; private set; }
 
-    public abstract void Initialize(T dependencies);
-    
-    public void ExecuteOnInitialise(Action action)
-    {
-        if (IsInitialized)
+        public void InitializeWithDependencies(GameObject root, T dependencies)
         {
-            action();
-            return;
+            RootObject = root;
+            Initialize(dependencies);
+            IsInitialized = true;
+
+            if (_actionsOnInitialize != null)
+            {
+                foreach (var action in _actionsOnInitialize)
+                    action.Invoke();
+            }
         }
 
-        if (_actionsOnInitialize == null)
-            _actionsOnInitialize = new List<Action>();
+        public abstract void Initialize(T dependencies);
 
-        _actionsOnInitialize.Add(action);
+        public void ExecuteOnInitialise(Action action)
+        {
+            if (IsInitialized)
+            {
+                action();
+                return;
+            }
+
+            if (_actionsOnInitialize == null)
+                _actionsOnInitialize = new List<Action>();
+
+            _actionsOnInitialize.Add(action);
+        }
     }
 }

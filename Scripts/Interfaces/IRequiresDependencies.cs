@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 
-public interface IRequiresDependencies<T>
+namespace UnityInject
 {
-    void InitializeWithDependencies(GameObject root, T dependencies);
-    public virtual void Initialize() { }
+    public interface IRequiresDependencies<T>
+    {
+        void InitializeWithDependencies(GameObject root, T dependencies);
+        public virtual void Initialize() { }
+    }
 }
