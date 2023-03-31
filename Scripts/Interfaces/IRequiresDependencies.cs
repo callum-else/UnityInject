@@ -6,5 +6,6 @@ namespace UnityInject
     {
         void InitializeWithDependencies(GameObject root, T dependencies);
         public virtual void Initialize() { }
+        public virtual void OnInitialized() { }
     }
 }

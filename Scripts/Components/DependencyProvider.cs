@@ -8,7 +8,8 @@ namespace UnityInject
 {
     public abstract class DependencyProvider : MonoBehaviour
     {
-        private UnityEvent<MonoBehaviour> _publishDependencies;
+        private UnityEvent<MonoBehaviour> _initializeWithDependencies;
+        private UnityEvent _onInitialized;
         private IEnumerable<Type> _implementedTypes;
         private bool _hasInjected;
 
@@ -26,7 +27,8 @@ namespace UnityInject
         private void Inject()
         {
             _hasInjected = true;
-            _publishDependencies = new UnityEvent<MonoBehaviour>();
+            _initializeWithDependencies = new UnityEvent<MonoBehaviour>();
+            _onInitialized = new UnityEvent();
 
             _implementedTypes = GetType().GetInterfaces()
                 .Where(x => x.CustomAttributes.Any(x => x.AttributeType == typeof(DependencyInterfaceAttribute)))
@@ -38,13 +40,18 @@ namespace UnityInject
                 var components = transform.GetComponentsInChildren(type, true).Cast<MonoBehaviour>();
                 foreach (var component in components)
                 {
-                    _publishDependencies.AddListener((x) => type
+                    _initializeWithDependencies.AddListener((x) => type
                         .GetMethod(nameof(IRequiresDependencies<MonoBehaviour>.InitializeWithDependencies))
                         .Invoke(component, new object[] { x.gameObject, x }));
+
+                    _onInitialized.AddListener(() => type
+                        .GetMethod(nameof(IRequiresDependencies<MonoBehaviour>.OnInitialized))
+                        .Invoke(component, new object[] { }));
                 }
             }
 
-            _publishDependencies.Invoke(this);
+            _initializeWithDependencies.Invoke(this);
+            _onInitialized.Invoke();
         }
     }
 }
